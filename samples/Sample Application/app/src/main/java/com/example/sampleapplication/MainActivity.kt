@@ -76,8 +76,10 @@ class MainActivity :
     private var userToken by mutableStateOf("")
     private var enableSpeech by mutableStateOf(false)
     private var isProceedClicked by mutableStateOf(false)
+    private var schemaName by mutableStateOf("")
+    private var environmentId by mutableStateOf("")
 
-    private val token = "" // Token Endpoint Of Bot
+    private val defaultToken = "https://defaultc2983f0e34ee4b438abcc2f460fd26b.e.environment.api.preprod.powerplatform.com/powervirtualagents/botsbyschema/cr924_pizzaPal/directline/token?api-version=2022-03-01-preview" // Token Endpoint Of Bot
     private val speechSubscriptionKey = "" // Speech Subscription Key
     private val speechServiceRegion = "" // Speech Service Region
 
@@ -87,13 +89,14 @@ class MainActivity :
         setContent {
             if (!isProceedClicked) {
                 SetupScreen(
-                    token = userToken,
-                    onTokenChange = { userToken = it },
+                    schemaName = schemaName,
+                    environmentId = environmentId,
+                    onSchemaNameChange = { schemaName = it },
+                    onEnvIdChange = { environmentId = it },
                     enableSpeech = enableSpeech,
                     onEnableSpeechChange = { enableSpeech = it },
                     onProceed = {
-                        val finalToken =
-                            if (userToken.contains("/directline/token?api-version")) userToken else token
+                        val finalToken = if (schemaName.isNotBlank() && environmentId.isNotBlank()) "https://$environmentId.e.environment.api.preprod.powerplatform.com/powervirtualagents/botsbyschema/$schemaName/directline/token?api-version=2022-03-01-preview" else defaultToken
                         val speechSubscriptionKey = if (enableSpeech) speechSubscriptionKey else ""
                         val speechServiceRegion = if (enableSpeech) speechServiceRegion else ""
                         val authConfigs = mapOf(
@@ -621,8 +624,10 @@ fun Modifier.innerShadow(isVoiceRecording: Boolean): Modifier {
 
 @Composable
 fun SetupScreen(
-    token: String,
-    onTokenChange: (String) -> Unit,
+    schemaName: String,
+    environmentId: String,
+    onSchemaNameChange: (String) -> Unit,
+    onEnvIdChange: (String) -> Unit,
     enableSpeech: Boolean,
     onEnableSpeechChange: (Boolean) -> Unit,
     onProceed: () -> Unit
@@ -634,10 +639,10 @@ fun SetupScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Enter Directine Token", style = MaterialTheme.typography.titleMedium)
+        Text("Bot schema name", style = MaterialTheme.typography.titleMedium)
         BasicTextField(
-            value = token,
-            onValueChange = onTokenChange,
+            value = schemaName,
+            onValueChange = onSchemaNameChange,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 16.dp)
@@ -645,9 +650,30 @@ fun SetupScreen(
                 .padding(8.dp),
             decorationBox = { innerTextField ->
                 Box {
-                    if (token.isEmpty()) {
+                    if (schemaName.isEmpty()) {
                         Text(
-                            text = "Enter your DirectLine token... else type NA",
+                            text = "Optional",
+                            color = Color.Gray
+                        )
+                    }
+                    innerTextField()
+                }
+            }
+        )
+        Text("Environment Id", style = MaterialTheme.typography.titleMedium)
+        BasicTextField(
+            value = environmentId,
+            onValueChange = onEnvIdChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp)
+                .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
+                .padding(8.dp),
+            decorationBox = { innerTextField ->
+                Box {
+                    if (environmentId.isEmpty()) {
+                        Text(
+                            text = "Optional",
                             color = Color.Gray
                         )
                     }
@@ -666,8 +692,8 @@ fun SetupScreen(
 //            Text("Enable Speech Service", modifier = Modifier.padding(start = 8.dp))
 //        }
         androidx.compose.material3.Button(
-            onClick = { if (token.isNotBlank()) onProceed() },
-            enabled = token.isNotBlank(),
+            onClick = { onProceed() },
+            enabled = true,
             modifier = Modifier.padding(top = 16.dp)
         ) {
             Text("Proceed")
