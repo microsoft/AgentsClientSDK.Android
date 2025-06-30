@@ -79,7 +79,7 @@ class MainActivity :
     private var schemaName by mutableStateOf("")
     private var environmentId by mutableStateOf("")
 
-    private val defaultToken = "https://defaultc2983f0e34ee4b438abcc2f460fd26b.e.environment.api.preprod.powerplatform.com/powervirtualagents/botsbyschema/cr924_pizzaPal/directline/token?api-version=2022-03-01-preview" // Token Endpoint Of Bot
+    private val defaultToken = "" // Token Endpoint Of Bot
     private val speechSubscriptionKey = "" // Speech Subscription Key
     private val speechServiceRegion = "" // Speech Service Region
 
