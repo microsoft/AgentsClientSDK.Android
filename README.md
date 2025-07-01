@@ -3,9 +3,7 @@
 We make it easy for you to have multi modal interactions with the agents created through Microsoft
 Copilot Studio (MCS) and Agents SDK.
 
-You can now text and talk to your agent and seamlessly switch between the two.
-The agent is continuously listening (CL) and can be interrupted any time.
-There are exciting new updates coming up. Voice is just the beginning!
+You can now text and talk to your agent. There are exciting new updates coming up.
 
 Currently, our SDK is only available for private preview and will have to be included as a local
 build dependency. We will very soon be available on major package managers/ repositories - ex. Maven
@@ -93,6 +91,12 @@ is MessageResponse.Success -> {
         ) + messages.filterNot { it.isAgentTyping }
     }
 }
+```
+
+### Step 5: Send Message
+Below is example on how you can send message to bot
+```
+MultimodalClientSDK.sdk?.sendMessage(text)
 ```
 
 Thats the essence of it.
