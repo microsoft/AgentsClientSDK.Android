@@ -12,17 +12,17 @@ Follow along to add the Android SDK to your app for multimodal agent interaction
 
 ## Getting started with Android
 
-This tutorial will help you connect with an agent created in Copilot Studio and published to custom
-website or mobile app, without authentication.
-The SDK connects to agents using Directline protocol, which enables anonymous text based agent
-interactions through websockets.
+This tutorial will help you connect with an agent created in Copilot Studio and published to a
+custom website or mobile app, without authentication. The SDK connects agents using Direct line
+protocol, which enables anonymous text-based agent interactions through web sockets.
 
 You will need the following:
 
 1. Bot schema name
 2. Environment Id
+3. Environment
 
-### Once you have created the new application or project in Android Studio, follow these steps to add the AgentsClientSDK to your project.
+### Once you have created a new application or project in Android Studio, follow these steps to add the AgentsClientSDK to your project.
 
 ### Step 1: Include in build
 
@@ -77,7 +77,7 @@ implementation("com.google.code.gson:gson:2.8.9")
 implementation("io.adaptivecards:adaptivecards-android:3.6.1")
 ```
 
-### Step 2: Import multimodal classes in your main activity
+### Step 2: Import AgentsClientSDK classes in your main activity
 
 ``` 
 import com.microsoft.agentsclientsdk.AgentsClientSDK
@@ -95,7 +95,7 @@ look like this:
   "user": {
     "environmentId": "your-environment-id",
     "schemaName": "your-bot-schema-name",
-    "environment": "",
+    "environment": "your-environment",
     "auth": {
       "clientId": "",
       "tenantId": ""
@@ -128,7 +128,7 @@ Your users can see the text version of the exchange.
 This can be done by ClientSDK.liveData state flow.
 The SDK updates user queries and responses through a MutableStateFlow. It has definite states
 defined by the sealed class ```MessageResponse``` and gets updated through ```ChatMessage ```
-generic android view. ChatMessage provides the text ( user query or agent response) and the
+generic android view. ChatMessage provides the text (user query or agent response) and the
 speaker (user or agent) values.
 
 Declared like this
@@ -173,7 +173,7 @@ AgentsClientSDK.sdk?.sendMessage(text)
 ```
 
 Thats the essence of it.
-The TextClientApp in samples folder of this repository provides a complete implementation. Do
+The TextClientApp in samples folder of this repository provide a complete implementation. Do
 check it out.
 
 ## Contributing
