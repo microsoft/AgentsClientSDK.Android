@@ -35,7 +35,7 @@ fun VanillaApp() {
                 color = Color.White
             )
             Text(
-                text = "This app uses the AgentsClientSDK, enabling you to explore its diverse features.",
+                text = "This app uses the AgentsClientSDK, enabling you to explore its multimodal features.",
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.White,
                 modifier = Modifier.padding(top = 12.dp)
