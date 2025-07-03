@@ -16,19 +16,58 @@ This tutorial will help you connect with an agent created in Copilot Studio and 
 website or mobile app, without authentication.
 The SDK connects to agents using Directline protocol, which enables anonymous text based agent
 interactions through websockets.
+
 You will need the following:
 
 1. Bot schema name
 2. Environment Id
 
+### Once you have created the new application or project in Android Studio, follow these steps to add the AgentsClientSDK to your project.
+
 ### Step 1: Include in build
 
-Include the MultimodalClientSDK.aar file as a Gradle dependency, along with the following
-dependencies
+#### In your project's settings.gradle.kts file, make the following changes to use the library or SDK from the app/libs folder.
+
+```
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        ...
+        flatDir {
+            dirs("app/libs")
+        }
+    }
+}
+```
+
+#### In the app's build.gradle.kts file, add the following to automatically download the library from the release that matches the specified sdkVersion, along with the necessary dependencies.
+
+```
+val sdkVersion = "v1.0.0"
+task("downloadAarFiles") {
+    doLast {
+        println("Download AARs task started...")
+        val aarUrl =
+            "https://github.com/microsoft/AgentsClientSDK.Android/releases/download/$sdkVersion/AgentsClientSDK.aar"
+        val aarFile = file("${project.rootDir}/app/libs/AgentsClientSDK.aar")
+        aarFile.parentFile.mkdirs() // Ensure directory exists
+        URL(aarUrl).openStream()
+            .use { input -> aarFile.outputStream().use { output -> input.copyTo(output) } }
+    }
+}
+
+tasks.named("preBuild") {
+    dependsOn("downloadAarFiles")
+}
+```
+
+Dependencies for the SDK are as follows:
 
 ```
 val ktorVersion = "2.3.2"
-implementation(mapOf("name" to "MultimodalClientSDK", "ext" to "aar"))
+implementation(mapOf("name" to "AgentsClientSDK", "ext" to "aar"))
 implementation("androidx.appcompat:appcompat:1.6.1")
 implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
 implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
@@ -41,19 +80,49 @@ implementation("io.adaptivecards:adaptivecards-android:3.6.1")
 ### Step 2: Import multimodal classes in your main activity
 
 ``` 
-import com.microsoft.multimodal.clientsdk.MultimodalClientSDK
-import com.microsoft.multimodal.clientsdk.configs.SDKConfigs
-import com.microsoft.multimodal.clientsdk.models.ChatMessage
-import com.microsoft.multimodal.clientsdk.models.MessageResponse
+import com.microsoft.agentsclientsdk.AgentsClientSDK
+import com.microsoft.agentsclientsdk.models.AppSettings
 ```
 
-### Step 3: Connection to SDK is initialized like so
+### Step 3: Create appsettings.json file to configure the SDK
+
+Create a file named `appsettings.json` in the `res/raw` folder of your Android project/app. This
+file will contain the configuration for the SDK. In case of Directline protocol, the file should
+look like this:
+
+```json
+{
+  "user": {
+    "environmentId": "your-environment-id",
+    "schemaName": "your-bot-schema-name",
+    "environment": "",
+    "auth": {
+      "clientId": "",
+      "tenantId": ""
+    }
+  },
+  "speech": {
+    "speechSubscriptionKey": "",
+    "speechServiceRegion": ""
+  }
+}
+```
+
+### Step 4: Connection to SDK is initialized after the appsettings.json file is created and fetched in main activity, like so
 
 ``` 
-MultimodalClientSDK.init(this@MainActivity, sdkConfigs)
+fun loadAppSettings(context: Context): AppSettings {
+    val inputStream = context.resources.openRawResource(R.raw.appsettings)
+    val json = inputStream.bufferedReader().use { it.readText() }
+    return Gson().fromJson(json, AppSettings::class.java)
+}
+
+val appSettings = loadAppSettings(this)
+
+AgentsClientSDK.init(this@MainActivity, appSettings)
 ```
 
-### Step 4: Chat window for viewing text
+### Step 5: Chat window for viewing text
 
 Your users can see the text version of the exchange.
 This can be done by ClientSDK.liveData state flow.
@@ -64,7 +133,9 @@ speaker (user or agent) values.
 
 Declared like this
 
-``` val messageResponse by MultimodalClientSDK.liveData.collectAsState()```
+``` 
+val messageResponse by AgentsClientSDK.liveData.collectAsState()
+```
 
 Example UI update based on state flow
 
@@ -93,14 +164,16 @@ is MessageResponse.Success -> {
 }
 ```
 
-### Step 5: Send Message
+### Step 6: Send Message
+
 Below is example on how you can send message to bot
+
 ```
-MultimodalClientSDK.sdk?.sendMessage(text)
+AgentsClientSDK.sdk?.sendMessage(text)
 ```
 
 Thats the essence of it.
-The Sample Application in samples folder of this repository provides a complete implementation. Do
+The TextClientApp in samples folder of this repository provides a complete implementation. Do
 check it out.
 
 ## Contributing
