@@ -19,11 +19,15 @@ protocol, which enables anonymous text-based agent interactions through web sock
 To ensure a smooth and successful integration of the SDK with your application, please make sure
 your development environment meets the following prerequisites.
 
-### Prerequisites
+### Supported Device And OS version
 
-- **Minimum Android SDK version:** 24 (Android 7.0)
-- **Target Android SDK version:** 34
-- **Compile SDK version:** 35
+- **Minimum supported Android OS version:** 7 Nougat (API level 24)
+- **Recommended Android OS version:** 11.0 Red Velvet Cake (API level 30) or higher
+- **Recommended device:** Any Android device with a minimum of 4GB RAM and a quad-core processor
+  for optimal performance.
+
+### Dev Env Prerequisites
+
 - **Java version:** 11
 - **Kotlin version:** 1.9.0 or higher
 - **Gradle version:** 7.5.1 or higher
