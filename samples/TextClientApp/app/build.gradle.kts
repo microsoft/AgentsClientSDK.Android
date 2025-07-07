@@ -41,17 +41,17 @@ android {
     }
 }
 
-// Download aar files from GitHub
+// Download SDK files from GitHub
 val sdkVersion = "v1.0.0"
 task("downloadSdkFiles") {
     doLast {
-        println("Download AARs task started...")
-        val aarUrl =
+        println("Download SDK files task started...")
+        val url =
             "https://github.com/microsoft/AgentsClientSDK.Android/releases/download/$sdkVersion/AgentsClientSDK.jar"
-        val aarFile = file("${project.rootDir}/app/libs/AgentsClientSDK.jar")
-        aarFile.parentFile.mkdirs() // Ensure directory exists
-        URL(aarUrl).openStream()
-            .use { input -> aarFile.outputStream().use { output -> input.copyTo(output) } }
+        val sdkFile = file("${project.rootDir}/app/libs/AgentsClientSDK.jar")
+        sdkFile.parentFile.mkdirs() // Ensure directory exists
+        URL(url).openStream()
+            .use { input -> sdkFile.outputStream().use { output -> input.copyTo(output) } }
     }
 }
 
