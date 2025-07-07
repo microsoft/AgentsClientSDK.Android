@@ -26,6 +26,7 @@ class MainActivity :
     AppCompatActivity() {
 
     private var isVoiceRecording by mutableStateOf(false)
+    private var isSdkInitialized = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,10 +34,7 @@ class MainActivity :
 
         val appSettings = loadAppSettings(this)
         setContent {
-            AgentsClientSDK.init(
-                this@MainActivity,
-                appSettings,
-            )
+            initializeSdk(appSettings)
             MainScreen(
                 isVoiceRecording = isVoiceRecording,
                 onRecordClick = { handleRecordClick() }
@@ -46,6 +44,13 @@ class MainActivity :
         requestPermissions.launch(
             arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.INTERNET)
         )
+    }
+
+    private fun initializeSdk(appSettings: AppSettings) {
+        if (!isSdkInitialized) {
+            AgentsClientSDK.init(this@MainActivity, appSettings)
+            isSdkInitialized = true
+        }
     }
 
     private val requestPermissions =
