@@ -43,12 +43,12 @@ android {
 
 // Download aar files from GitHub
 val sdkVersion = "v1.0.0"
-task("downloadAarFiles") {
+task("downloadSdkFiles") {
     doLast {
         println("Download AARs task started...")
         val aarUrl =
-            "https://github.com/microsoft/AgentsClientSDK.Android/releases/download/$sdkVersion/AgentsClientSDK.aar"
-        val aarFile = file("${project.rootDir}/app/libs/AgentsClientSDK.aar")
+            "https://github.com/microsoft/AgentsClientSDK.Android/releases/download/$sdkVersion/AgentsClientSDK.jar"
+        val aarFile = file("${project.rootDir}/app/libs/AgentsClientSDK.jar")
         aarFile.parentFile.mkdirs() // Ensure directory exists
         URL(aarUrl).openStream()
             .use { input -> aarFile.outputStream().use { output -> input.copyTo(output) } }
@@ -56,7 +56,7 @@ task("downloadAarFiles") {
 }
 
 tasks.named("preBuild") {
-    dependsOn("downloadAarFiles")
+    dependsOn("downloadSdkFiles")
 }
 
 dependencies {
@@ -79,7 +79,7 @@ dependencies {
 
     // AgentsClientSDK dependency
     val ktorVersion = "2.3.2"
-    implementation(mapOf("name" to "AgentsClientSDK", "ext" to "aar"))
+    implementation(files("libs/AgentsClientSDK.jar"))
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
