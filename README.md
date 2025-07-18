@@ -103,8 +103,9 @@ enabling you to initialize and interact with the SDK in your app’s code. Prope
 for successful compilation and usage of the SDK features.
 
 ``` 
-import com.microsoft.agentsclientsdk.AgentsClientSDK
-import com.microsoft.agentsclientsdk.models.AppSettings
+import com.microsoft.agents.client.android.AgentsClientSDK
+import com.microsoft.agents.client.android.models.AppSettings
+import com.microsoft.agents.client.android.sdks.ClientSDK
 ```
 
 ### Step 3: Configure the SDK with appsettings.json
@@ -116,19 +117,29 @@ SDK to connect and function correctly. The file should look like this:
 ```json
 {
   "user": {
-    "environmentId": "your-environment-id",
-    "schemaName": "your-bot-schema-name",
-    "environment": "your-environment",
-    "auth": {
+    "environmentId": "",        // environment in which agent is created
+    "schemaName": "",           // schema name of agent. Both are available in agent Metadata
+    "environment": "",          // mapping given below
+    "isAuthEnabled": false,     // remains false for this release
+    "auth": {                   // furure scope. No need to input anything for now
       "clientId": "",
-      "tenantId": ""
+      "tenantId": "",
+      "redirectUri": ""
     }
   },
-  "speech": {
+  "speech": {               // furure scope. No need to input anything for now
     "speechSubscriptionKey": "",
     "speechServiceRegion": ""
   }
 }
+```
+
+Environment mapping:
+
+```
+copilotstudio.microsoft.com -> prod
+copilotstudio.preview.microsoft.com -> prod
+copilotstudio.preprod.microsoft.com -> preprod
 ```
 
 ### Step 4: Initialize the SDK Connection in Your Main Activity
@@ -159,7 +170,7 @@ appSettings: The configuration object created in the previous step, essential fo
 functionality.
 
 ```
-AgentsClientSDK.init(this@MainActivity, appSettings)
+val agentsClientSdk = AgentsClientSDK.init(this@MainActivity, appSettings)
 ```
 
 ### Step 5: Displaying Chat Messages Using State Flow in the UI
@@ -176,7 +187,8 @@ message is encapsulated in a `ChatMessage` object, which includes the message te
 Example for observing message updates:
 
 ``` 
-val messageResponse by AgentsClientSDK.liveData.collectAsState()
+val messageResponse by (agentsClientSdk?.liveData?.collectAsState()
+    ?: remember { mutableStateOf(MessageResponse.Initial) })
 ```
 
 Example UI update based on state flow
@@ -209,15 +221,15 @@ is MessageResponse.Success -> {
 ### Step 6: Sending Messages to the Agent
 
 This step demonstrates how to send a message from your app to the agent using the SDK. The
-`sendMessage` function is called on the `sdk` instance, passing the user's input text. This triggers
-the SDK to forward the message to the agent and handle the response, which will be reflected in the
-chat UI if you are observing the `liveData` as shown in previous steps.
+`sendMessage` function is called on the `agentsClientSdk` instance, passing the user's input text.
+This triggers the SDK to forward the message to the agent and handle the response, which will be
+reflected in the chat UI if you are observing the `liveData` as shown in previous steps.
 
 This is a simple, direct way to send user input to the agent. You can call this method from any part
 of your app where you want to initiate a conversation or respond to user actions.
 
 ```
-AgentsClientSDK.sdk?.sendMessage(text)
+agentsClientSdk.sendMessage(text)
 ```
 
 That’s it—you’re all set to start building engaging multimodal agent experiences in your Android
