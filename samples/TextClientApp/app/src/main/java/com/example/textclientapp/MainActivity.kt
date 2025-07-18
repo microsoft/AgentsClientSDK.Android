@@ -1,6 +1,7 @@
 package com.example.textclientapp
 
 import android.Manifest
+import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -9,35 +10,48 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.textclientapp.appUI.MainScreen
-import com.example.textclientapp.ui.theme.TextClientAppTheme
 import com.google.gson.Gson
-import com.microsoft.agentsclientsdk.AgentsClientSDK
-import com.microsoft.agentsclientsdk.models.AppSettings
+import com.microsoft.agents.client.android.AgentsClientSDK
+import com.microsoft.agents.client.android.exceptions.SDKError
+import com.microsoft.agents.client.android.models.AppSettings
+import com.microsoft.agents.client.android.sdks.ClientSDK
+import com.microsoft.agents.client.android.services.authService.AuthNService
+import com.microsoft.agents.client.android.services.authService.IAuthNUIHandler
 
-class MainActivity :
-    AppCompatActivity() {
+class MainActivity : AppCompatActivity(), IAuthNUIHandler {
 
     private var isVoiceRecording by mutableStateOf(false)
+    private var agentsClientSdk by mutableStateOf<ClientSDK?>(null)
     private var isSdkInitialized = false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
         val appSettings = loadAppSettings(this)
+
         setContent {
             initializeSdk(appSettings)
             MainScreen(
                 isVoiceRecording = isVoiceRecording,
-                onRecordClick = { handleRecordClick() }
+                onRecordClick = { handleRecordClick() },
+                agentsClientSdk = agentsClientSdk
             )
         }
 
@@ -46,10 +60,23 @@ class MainActivity :
         )
     }
 
+    private fun loadAppSettings(context: Context): AppSettings {
+        val inputStream = context.resources.openRawResource(R.raw.appsettings)
+        val json = inputStream.bufferedReader().use { it.readText() }
+        return Gson().fromJson(json, AppSettings::class.java)
+    }
+
     private fun initializeSdk(appSettings: AppSettings) {
         if (!isSdkInitialized) {
-            AgentsClientSDK.init(this@MainActivity, appSettings)
-            isSdkInitialized = true
+            try {
+                AuthNService.uiHandler = this
+                agentsClientSdk = AgentsClientSDK.initSDK(this@MainActivity, appSettings)
+                isSdkInitialized = true
+            } catch (e: SDKError) {
+                val errorMessage = "${e.code}: ${e.message}"
+                Log.e("MainActivity", errorMessage, e)
+                showToast(errorMessage)
+            }
         }
     }
 
@@ -64,35 +91,50 @@ class MainActivity :
             }
         }
 
-    fun handleRecordClick() {
+    private fun handleRecordClick() {
         if (isVoiceRecording) {
-            AgentsClientSDK.sdk?.stopContinuousListening()
+            agentsClientSdk?.stopContinuousListening()
         } else {
-            AgentsClientSDK.sdk?.startContinuousListening()
+            agentsClientSdk?.startContinuousListening()
         }
         isVoiceRecording = !isVoiceRecording
-        AgentsClientSDK.sdk?.stopSpeaking() // Stop the bot's speech when the user starts speaking
+        agentsClientSdk?.stopSpeaking() // Stop the bot's speech when the user starts speaking
     }
-}
 
-fun loadAppSettings(context: Context): AppSettings {
-    val inputStream = context.resources.openRawResource(R.raw.appsettings)
-    val json = inputStream.bufferedReader().use { it.readText() }
-    return Gson().fromJson(json, AppSettings::class.java)
-}
+    override fun showToast(msg: String) {
+        runOnUiThread {
+            AlertDialog.Builder(this)
+                .setTitle("Error")
+                .setMessage(msg)
+                .setPositiveButton("Dismiss") { _, _ ->
+                    finishAffinity()
+                }
+                .setCancelable(false)
+                .show()
+        }
+    }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    TextClientAppTheme {
-        Greeting("Android")
+    override fun showSignInContent() {
+        setContent {
+            Surface(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    verticalArrangement = Arrangement.Center, // Center vertically
+                    horizontalAlignment = Alignment.CenterHorizontally // Center horizontally
+                ) {
+                    Text(
+                        "Sign in to Microsoft to continue",
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Button(onClick = { AuthNService.signIn(this@MainActivity) }) {
+                        Text("Sign in")
+                    }
+                }
+            }
+        }
     }
 }

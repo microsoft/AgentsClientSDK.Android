@@ -1,6 +1,5 @@
 package com.example.textclientapp.appUI
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,33 +21,34 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.microsoft.agentsclientsdk.AgentsClientSDK
-import com.microsoft.agentsclientsdk.models.ChatMessage
-import com.microsoft.agentsclientsdk.models.MessageResponse
+import com.microsoft.agents.client.android.models.ChatMessage
+import com.microsoft.agents.client.android.models.MessageResponse
+import com.microsoft.agents.client.android.sdks.ClientSDK
 import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(
     isVoiceRecording: Boolean,
-    onRecordClick: () -> Unit
+    onRecordClick: () -> Unit,
+    agentsClientSdk: ClientSDK?
 ) {
     val showAgent = remember { mutableStateOf(false) }
     var messages by remember { mutableStateOf(listOf<UiChatMessage>()) }
     var recognizedText by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
+    val messageResponse by (agentsClientSdk?.liveData?.collectAsState()
+        ?: remember { mutableStateOf(MessageResponse.Initial) })
 
-    val messageResponse by AgentsClientSDK.liveData.collectAsState()
-    AgentsClientSDK.sdk?.registerForContinuousListening(
+    agentsClientSdk?.registerForContinuousListening(
         onRecognizing = { recognizedText = it },
         onRecognized = {
-            Log.e("onRecognized", "" + recognizedText)
             recognizedText = it
 
             if (recognizedText.isNotBlank()) {
                 val text = recognizedText
                 recognizedText = ""
                 scope.launch {
-                    AgentsClientSDK.sdk?.sendMessage(text)
+                    agentsClientSdk.sendMessage(text)
                 }
             }
         }
@@ -164,7 +164,8 @@ fun MainScreen(
                         showAgent.value = false
                     },
                     messages = messages,
-                    recognizedText = recognizedText
+                    recognizedText = recognizedText,
+                    agentsClientSdk = agentsClientSdk
                 )
             }
         } else {

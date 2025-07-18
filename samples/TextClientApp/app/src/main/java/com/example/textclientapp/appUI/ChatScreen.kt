@@ -1,6 +1,5 @@
 package com.example.textclientapp.appUI
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.microsoft.agentsclientsdk.AgentsClientSDK
+import com.microsoft.agents.client.android.sdks.ClientSDK
 import kotlinx.coroutines.launch
 
 @Composable
@@ -20,7 +19,8 @@ fun ChatScreen(
     isVoiceRecording: Boolean,
     onRecordClick: () -> Unit,
     messages: List<UiChatMessage>,
-    recognizedText: String
+    recognizedText: String,
+    agentsClientSdk: ClientSDK?
 ) {
     val scope = rememberCoroutineScope()
     Column(
@@ -43,11 +43,10 @@ fun ChatScreen(
             onSendClick = { text ->
                 if (text.isNotBlank()) {
                     scope.launch {
-                        Log.e("onclick text", "" + text)
-                        AgentsClientSDK.sdk?.sendMessage(text)
+                        agentsClientSdk?.sendMessage(text)
                     }
                 }
-                AgentsClientSDK.sdk?.stopSpeaking()
+                agentsClientSdk?.stopSpeaking()
             },
             onRecordClick = onRecordClick,
             recognizedText = recognizedText,
