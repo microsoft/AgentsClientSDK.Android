@@ -10,31 +10,17 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.example.textclientapp.appUI.MainScreen
 import com.google.gson.Gson
 import com.microsoft.agents.client.android.AgentsClientSDK
 import com.microsoft.agents.client.android.exceptions.SDKError
 import com.microsoft.agents.client.android.models.AppSettings
 import com.microsoft.agents.client.android.sdks.ClientSDK
-import com.microsoft.agents.client.android.services.authService.AuthNService
-import com.microsoft.agents.client.android.services.authService.IAuthNUIHandler
 
-class MainActivity : AppCompatActivity(), IAuthNUIHandler {
+class MainActivity : AppCompatActivity() {
 
     private var isVoiceRecording by mutableStateOf(false)
     private var agentsClientSdk by mutableStateOf<ClientSDK?>(null)
@@ -69,7 +55,6 @@ class MainActivity : AppCompatActivity(), IAuthNUIHandler {
     private fun initializeSdk(appSettings: AppSettings) {
         if (!isSdkInitialized) {
             try {
-                AuthNService.uiHandler = this
                 agentsClientSdk = AgentsClientSDK.initSDK(this@MainActivity, appSettings)
                 isSdkInitialized = true
             } catch (e: SDKError) {
@@ -101,7 +86,7 @@ class MainActivity : AppCompatActivity(), IAuthNUIHandler {
         agentsClientSdk?.stopSpeaking() // Stop the bot's speech when the user starts speaking
     }
 
-    override fun showToast(msg: String) {
+    fun showToast(msg: String) {
         runOnUiThread {
             AlertDialog.Builder(this)
                 .setTitle("Error")
@@ -111,30 +96,6 @@ class MainActivity : AppCompatActivity(), IAuthNUIHandler {
                 }
                 .setCancelable(false)
                 .show()
-        }
-    }
-
-    override fun showSignInContent() {
-        setContent {
-            Surface(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    verticalArrangement = Arrangement.Center, // Center vertically
-                    horizontalAlignment = Alignment.CenterHorizontally // Center horizontally
-                ) {
-                    Text(
-                        "Sign in to Microsoft to continue",
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Button(onClick = { AuthNService.signIn(this@MainActivity) }) {
-                        Text("Sign in")
-                    }
-                }
-            }
         }
     }
 }
